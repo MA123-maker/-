@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>个性化服装定制平台</title>
+    <style>
+      :root {
+        font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        color: #1f2937;
+        background: #f8fafc;
+      }
+
+      body {
+        margin: 0;
+        padding: 24px;
+      }
+
+      .container {
+        max-width: 960px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        margin-bottom: 8px;
+      }
+
+      p {
+        line-height: 1.6;
+      }
+
+      .panel {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+      }
+
+      form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 14px;
+      }
+
+      label {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-weight: 600;
+      }
+
+      input,
+      select {
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        padding: 10px;
+        font-size: 14px;
+      }
+
+      button {
+        margin-top: 6px;
+        border: none;
+        border-radius: 8px;
+        background: #2563eb;
+        color: #fff;
+        padding: 12px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .result {
+        margin-top: 20px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .card {
+        background: #eff6ff;
+        border-left: 4px solid #2563eb;
+        border-radius: 10px;
+        padding: 14px;
+      }
+
+      .empty {
+        color: #475569;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <h1>个性化服装定制平台（MVP）</h1>
+      <p>根据消费者体型、场景、季节、预算和风格偏好，生成可执行的定制化服装推荐方案。</p>
+
+      <section class="panel">
+        <form id="customForm">
+          <label>
+            消费场景
+            <select name="occasion" required>
+              <option value="通勤">通勤</option>
+              <option value="休闲">休闲</option>
+              <option value="运动">运动</option>
+              <option value="宴会">宴会</option>
+            </select>
+          </label>
+
+          <label>
+            偏好风格
+            <select name="style" required>
+              <option value="简约">简约</option>
+              <option value="商务">商务</option>
+              <option value="街头">街头</option>
+              <option value="复古">复古</option>
+            </select>
+          </label>
+
+          <label>
+            季节
+            <select name="season" required>
+              <option value="春秋">春秋</option>
+              <option value="夏季">夏季</option>
+              <option value="冬季">冬季</option>
+            </select>
+          </label>
+
+          <label>
+            预算（元）
+            <input type="number" name="budget" min="100" max="20000" value="1200" required />
+          </label>
+
+          <label>
+            体型特征
+            <select name="bodyType" required>
+              <option value="标准">标准</option>
+              <option value="偏瘦">偏瘦</option>
+              <option value="偏壮">偏壮</option>
+              <option value="高挑">高挑</option>
+            </select>
+          </label>
+
+          <label>
+            颜色偏好
+            <input type="text" name="color" value="蓝灰色" maxlength="20" required />
+          </label>
+
+          <button type="submit">生成个性化定制方案</button>
+        </form>
+
+        <div id="result" class="result empty">请填写偏好信息后生成方案。</div>
+      </section>
+    </main>
+
+    <script>
+      const seasonFabricMap = {
+        夏季: "轻薄棉麻 + 透气网眼",
+        冬季: "羊毛混纺 + 内里保暖层",
+        春秋: "抗皱斜纹棉 + 微弹面料"
+      };
+
+      const bodyTypeCutMap = {
+        标准: "标准版型，保持肩腰比例",
+        偏瘦: "增加层次感和微廓形剪裁",
+        偏壮: "优化胸肩余量，降低束缚感",
+        高挑: "拉长比例的中长线条剪裁"
+      };
+
+      const budgetTierMap = [
+        { max: 999, value: "基础定制（主打性价比）" },
+        { max: 2999, value: "进阶定制（面料升级）" },
+        { max: Infinity, value: "高阶定制（专属版型与工艺）" }
+      ];
+
+      function getBudgetTier(budget) {
+        return budgetTierMap.find((tier) => budget <= tier.max)?.value || budgetTierMap[0].value;
+      }
+
+      function buildPlan({ occasion, style, season, budget, bodyType, color }) {
+        const suggestions = [
+          `核心单品：${style}风格 ${occasion}套装（主色：${color}）`,
+          `推荐面料：${seasonFabricMap[season]}`,
+          `版型建议：${bodyTypeCutMap[bodyType]}`,
+          `预算方案：${getBudgetTier(Number(budget))}`,
+          "附加服务：支持姓名刺绣、尺寸档案保存、二次复购免量体"
+        ];
+
+        return suggestions;
+      }
+
+      const form = document.getElementById("customForm");
+      const result = document.getElementById("result");
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+        const profile = Object.fromEntries(formData.entries());
+        const plan = buildPlan(profile);
+
+        result.classList.remove("empty");
+        result.replaceChildren(
+          ...plan.map((item) => {
+            const card = document.createElement("article");
+            card.className = "card";
+            card.textContent = item;
+            return card;
+          })
+        );
+      });
+    </script>
+  </body>
+</html>
